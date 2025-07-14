@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pathlib import Path
 
 class Settings(BaseSettings):
     POSTGRES_USER: str
@@ -9,6 +10,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
 
     class Config:
-        env_file = "../../../.env"
+        env_file = "/home/chanwoo/PycharmProjects/parking-map/.env"
+        env_file_encoding = "utf-8"
 
 settings = Settings()

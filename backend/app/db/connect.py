@@ -1,65 +1,43 @@
+import asyncpg
 from backend.app.core.config import settings
-import psycopg2
 
-class ConnectDataBase:
-    def __init__(self):
-        self.host = settings.POSTGRES_HOST
-        self.port = settings.POSTGRES_PORT
-        self.username = settings.POSTGRES_USER
-        self.password = settings.POSTGRES_PASSWORD
-        self.database = settings.POSTGRES_DB
-        self.connection = None
+class AsyncDBPool:
+    _pool: asyncpg.pool.Pool | None = None
 
-    def connect(self):
-        self.connection = psycopg2.connect(
-            host = self.host,
-            port = self.port,
-            database = self.database,
-            user = self.username,
-            password = self.password
-        )
-        return self.connection
+    @classmethod
+    async def init_pool(cls):
+        if cls._pool is None:
+            cls._pool = await asyncpg.create_pool(
+                user=settings.POSTGRES_USER,
+                password=settings.POSTGRES_PASSWORD,
+                database=settings.POSTGRES_DB,
+                host=settings.POSTGRES_HOST,
+                port=int(settings.POSTGRES_PORT),
+                min_size=1,
+                max_size=10,
+            )
 
-    def insert_one_query(self, sql, val):
-        try:
-            cur = self.connection.cursor()
-            cur.execute(sql, val)
-            self.connection.commit()
-            cur.close()
+    @classmethod
+    async def close_pool(cls):
+        if cls._pool:
+            await cls._pool.close()
 
-        except Exception as e:
-            print(f"Insert One Error: {e}")
-            self.connection.rollback()
+    @classmethod
+    async def fetch_one(cls, sql: str, params: tuple = ()):
+        async with cls._pool.acquire() as conn:
+            return await conn.fetchrow(sql, *params)
 
-    def insert_many_query(self, sql, val):
-        try:
-            cur = self.connection.cursor()
-            cur.executemany(sql, val)
-            self.connection.commit()
-            cur.close()
+    @classmethod
+    async def fetch_all(cls, sql: str, params: tuple = ()):
+        async with cls._pool.acquire() as conn:
+            return await conn.fetch(sql, *params)
 
-        except Exception as e:
-            print(f"Insert Many Error: {e}")
-            self.connection.rollback()
+    @classmethod
+    async def execute(cls, sql: str, params: tuple = ()):
+        async with cls._pool.acquire() as conn:
+            return await conn.execute(sql, *params)
 
-    def select_one_query(self, sql, val):
-        try:
-            cur = self.connection.cursor()
-            cur.execute(sql, val)
-            record = cur.fetchone()
-            return record
-
-        except Exception as e:
-            print(f"Select One Error {e}")
-            return None
-
-    def select_many_query(self, sql, val):
-        try:
-            cur = self.connection.cursor()
-            cur.execute(sql, val)
-            record = cur.fetchall()
-            return record
-
-        except Exception as e:
-            print(f"Select Many Error {e}")
-            return None
+    @classmethod
+    async def execute_returning(cls, sql: str, params: tuple = ()):
+        async with cls._pool.acquire() as conn:
+            return await conn.fetchval(sql, *params)
