@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from backend.app.db.connect import AsyncDBPool
 from backend.app.api.auth import router as auth_router
 from backend.app.api.users import router as user_router
+from backend.app.api.parking import router as parking_lot_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -28,3 +29,4 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(parking_lot_router)
