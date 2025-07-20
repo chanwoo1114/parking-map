@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-from pathlib import Path
 
 class Settings(BaseSettings):
     POSTGRES_USER: str
@@ -8,6 +7,7 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: str
     SECRET_KEY: str
+    API_KEY: str
 
     class Config:
         env_file = "/home/chanwoo/PycharmProjects/parking-map/.env"

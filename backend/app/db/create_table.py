@@ -1,5 +1,6 @@
-import asyncio
 from backend.app.db.connect import AsyncDBPool
+import asyncio
+
 
 async def create_app_user_table():
     await AsyncDBPool.execute("""
@@ -8,6 +9,7 @@ async def create_app_user_table():
             uuid UUID UNIQUE NOT NULL DEFAULT uuid_generate_v4()
         );
     """)
+
 
 async def create_user_info_table():
     await AsyncDBPool.execute("""
@@ -27,6 +29,7 @@ async def create_user_info_table():
         );
     """)
 
+
 async def create_user_social_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.user_social (
@@ -37,20 +40,16 @@ async def create_user_social_table():
         );
     """)
 
-async def create_parking_lot_table():
+
+async def create_parking_lot_base_table():
     await AsyncDBPool.execute("""
-        CREATE TABLE IF NOT EXISTS public.parking_lot (
+        CREATE TABLE IF NOT EXISTS public.parking_lot_base (
             id SERIAL PRIMARY KEY,
             external_id VARCHAR(100),
-            owner_id INTEGER REFERENCES app_user(id) ON UPDATE CASCADE ON DELETE SET NULL,
             name VARCHAR(100) NOT NULL,
-            lot_type VARCHAR(20) NOT NULL,
+            lot_type VARCHAR(20) NOT NULL, -- 'resident', 'public', 'private'
             address TEXT,
-            geom GEOGRAPHY(POINT, 4326) NOT NULL,
-            total_spaces INTEGER CHECK (total_spaces > 0),
-            available_spaces INTEGER CHECK (available_spaces >= 0),
-            operating_hours JSONB,
-            price_policy JSONB,
+            geom GEOGRAPHY(POINT, 4326),
             description TEXT,
             is_deleted BOOLEAN DEFAULT FALSE,
             deleted_at TIMESTAMPTZ,
@@ -59,15 +58,43 @@ async def create_parking_lot_table():
         );
     """)
 
+
+async def create_resident_parking_lot_table():
+    await AsyncDBPool.execute("""
+        CREATE TABLE IF NOT EXISTS public.resident_parking_lot (
+            id INTEGER PRIMARY KEY REFERENCES parking_lot_base(id) ON DELETE CASCADE,
+            owner_id INTEGER REFERENCES app_user(id) ON DELETE SET NULL,
+            total_spaces INTEGER CHECK (total_spaces > 0),
+            operating_hours JSONB,
+            price_policy JSONB,
+            is_active BOOLEAN DEFAULT TRUE
+        );
+    """)
+
+
+async def create_public_private_parking_lot_table():
+    await AsyncDBPool.execute("""
+        CREATE TABLE IF NOT EXISTS public.public_private_parking_lot (
+            id INTEGER PRIMARY KEY REFERENCES parking_lot_base(id) ON DELETE CASCADE,
+            total_spaces INTEGER CHECK (total_spaces > 0),
+            available_spaces INTEGER CHECK (available_spaces >= 0),
+            operating_hours JSONB,
+            price_policy JSONB,
+            managing_agency TEXT,
+            contact TEXT,
+            is_realtime_available BOOLEAN DEFAULT FALSE
+        );
+    """)
+
+
 async def create_parking_lot_user_assignment_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.parking_lot_user_assignment (
             id SERIAL PRIMARY KEY,
-            parking_lot_id INTEGER NOT NULL REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER NOT NULL REFERENCES resident_parking_lot(id) ON DELETE CASCADE,
             user_id INTEGER NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
             start_time TIME NOT NULL,
             end_time TIME NOT NULL,
-            assignment_type VARCHAR(20),
             is_deleted BOOLEAN DEFAULT FALSE,
             deleted_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ DEFAULT now(),
@@ -76,11 +103,12 @@ async def create_parking_lot_user_assignment_table():
         );
     """)
 
-async def create_parking_lot_image():
+
+async def create_parking_lot_image_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.parking_lot_image (
             id SERIAL PRIMARY KEY,
-            parking_lot_id INTEGER REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER REFERENCES parking_lot_base(id) ON DELETE CASCADE,
             image_url TEXT NOT NULL,
             is_cover BOOLEAN DEFAULT FALSE,
             is_deleted BOOLEAN DEFAULT FALSE,
@@ -88,11 +116,12 @@ async def create_parking_lot_image():
         );
     """)
 
-async def create_parking_slot():
+
+async def create_parking_slot_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.parking_slot (
             id SERIAL PRIMARY KEY,
-            parking_lot_id INTEGER REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER REFERENCES parking_lot_base(id) ON DELETE CASCADE,
             slot_number VARCHAR(20),
             is_active BOOLEAN DEFAULT TRUE,
             is_deleted BOOLEAN DEFAULT FALSE,
@@ -101,11 +130,12 @@ async def create_parking_slot():
         );
     """)
 
-async def create_parking_availability_history():
+
+async def create_parking_availability_history_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.parking_availability_history (
             id SERIAL PRIMARY KEY,
-            parking_lot_id INTEGER REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER REFERENCES parking_lot_base(id) ON DELETE CASCADE,
             available_spaces INTEGER NOT NULL,
             recorded_at TIMESTAMPTZ DEFAULT now()
         );
@@ -115,7 +145,8 @@ async def create_parking_availability_history():
         ON public.parking_availability_history (parking_lot_id, recorded_at DESC);
     """)
 
-async def create_parking_reservation():
+
+async def create_parking_reservation_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.reservation (
             id SERIAL PRIMARY KEY,
@@ -137,11 +168,12 @@ async def create_parking_reservation():
         WHERE status IN ('PENDING', 'CONFIRMED');
     """)
 
-async def create_parking_review():
+
+async def create_parking_review_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.review (
             id SERIAL PRIMARY KEY,
-            parking_lot_id INTEGER REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER REFERENCES parking_lot_base(id) ON DELETE CASCADE,
             user_id INTEGER REFERENCES app_user(id) ON DELETE CASCADE,
             rating SMALLINT CHECK (rating BETWEEN 1 AND 5),
             comment TEXT,
@@ -152,11 +184,12 @@ async def create_parking_review():
         );
     """)
 
-async def create_user_favorite():
+
+async def create_user_favorite_table():
     await AsyncDBPool.execute("""
         CREATE TABLE IF NOT EXISTS public.user_favorite (
             user_id INTEGER REFERENCES app_user(id) ON DELETE CASCADE,
-            parking_lot_id INTEGER REFERENCES parking_lot(id) ON DELETE CASCADE,
+            parking_lot_id INTEGER REFERENCES parking_lot_base(id) ON DELETE CASCADE,
             is_deleted BOOLEAN DEFAULT FALSE,
             deleted_at TIMESTAMPTZ,
             created_at TIMESTAMPTZ DEFAULT now(),
@@ -164,18 +197,22 @@ async def create_user_favorite():
         );
     """)
 
+
 async def create_all_tables():
     await create_app_user_table()
     await create_user_info_table()
     await create_user_social_table()
-    await create_parking_lot_table()
+    await create_parking_lot_base_table()
+    await create_resident_parking_lot_table()
+    await create_public_private_parking_lot_table()
     await create_parking_lot_user_assignment_table()
-    await create_parking_lot_image()
-    await create_parking_slot()
-    await create_parking_availability_history()
-    await create_parking_reservation()
-    await create_parking_review()
-    await create_user_favorite()
+    await create_parking_lot_image_table()
+    await create_parking_slot_table()
+    await create_parking_availability_history_table()
+    await create_parking_reservation_table()
+    await create_parking_review_table()
+    await create_user_favorite_table()
+
 
 if __name__ == "__main__":
     async def run():

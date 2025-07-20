@@ -1,15 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Dict, Optional
+from pydantic import BaseModel
 
-class ParkingLotCreateRequest(BaseModel):
-    name: str
-    lot_type: str
-    address: Optional[str]
-    latitude: float
-    longitude: float
+class ParkingLotUserAssignmentCreate(BaseModel):
+    parking_lot_id: int
     total_spaces: int
-    available_spaces: int
-    operating_hours: Optional[dict] = Field(default_factory=dict)
-    price_policy: Optional[dict] = Field(default_factory=dict)
-    description: Optional[str]
-    external_id: Optional[str]
+    operating_hours: Dict[str, str]
+    price_policy: Dict[str, str]
+
+class ResidentParkingLotUpdate(BaseModel):
+    total_spaces: Optional[int] = None
+    operating_hours: Optional[Dict[str, str]] = None
+    price_policy: Optional[Dict[str, str]] = None
