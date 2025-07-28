@@ -9,7 +9,7 @@ async def parking_info_api():
     service_key = settings.API_KEY
     number_of_rows = '10'
     format = '2'
-    page_no = 2048
+    page_no = 2602
 
     await AsyncDBPool.init_pool()
 

@@ -16,7 +16,7 @@ async def shutdown_event():
     await AsyncDBPool.close_pool()
 
 origins = [
-    "http://localhost:8080",
+    "*",
 ]
 
 app.add_middleware(

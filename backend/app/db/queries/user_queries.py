@@ -39,8 +39,7 @@ async def is_email_taken(email: str):
             email = $1
     """
     result = await AsyncDBPool.fetch_one(sql, (email,))
-    return result
-
+    return bool(result)
 
 async def get_user_email_query(email: str):
     """
@@ -55,7 +54,7 @@ async def get_user_email_query(email: str):
         WHERE email = $1
     """
     result = await AsyncDBPool.fetch_one(sql, (email,))
-    return result
+    return bool(result)
 
 async def get_user_info_by_id(user_id: int):
     '''
