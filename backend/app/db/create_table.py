@@ -1,6 +1,5 @@
-from backend.app.db.connect import AsyncDBPool
+from app.db.connect import AsyncDBPool
 import asyncio
-
 
 async def create_app_user_table():
     await AsyncDBPool.execute("""

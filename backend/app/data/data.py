@@ -1,9 +1,8 @@
 import asyncio
 import pandas as pd
 import json
-from backend.app.db.queries.parking_queries import insert_parking_lot_base
-from backend.app.db.connect import AsyncDBPool
-
+from app.db.queries.parking_queries import insert_parking_lot_base
+from app.db.connect import AsyncDBPool
 
 async def bulk_insert_parking_lots():
     with open('거주자우선주차구역.json', 'r', encoding='utf-8') as f:

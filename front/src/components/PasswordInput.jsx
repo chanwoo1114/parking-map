@@ -1,7 +1,7 @@
-import passwordToggle from '../hooks/auth/PasswordToggle.js';
+import usePasswordToggle from '../hooks/auth/usePasswordToggle.js';
 
 export default function PasswordInput({value, onChange, placeholder = "비밀번호", ...props}) {
-    const [showPassword, toggleShow] = passwordToggle();
+    const [showPassword, toggleShow] = usePasswordToggle();
 
     return (
         <div className="relative mb-4">

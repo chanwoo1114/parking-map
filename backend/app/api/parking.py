@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
-from backend.app.core.dependencies import get_current_user_id
-from backend.app.schemas.parking import (
+from app.core.dependencies import get_current_user_id
+from app.schemas.parking import (
     ParkingLotUserAssignmentCreate, ResidentParkingLotUpdate,
 
 )
-from backend.app.db.queries.parking_queries import (
+from app.db.queries.parking_queries import (
     insert_resident_parking_lot, update_resident_parking_lot,
     delete_resident_parking_lot
 )

@@ -1,4 +1,4 @@
-from backend.app.db.connect import AsyncDBPool
+from app.db.connect import AsyncDBPool
 from typing import Optional
 
 async def insert_app_user_query():
@@ -25,7 +25,6 @@ async def insert_email_user_query(val: tuple):
     """
     await AsyncDBPool.execute(sql, val)
 
-
 async def is_email_taken(email: str):
     """
     이메일 중복 확인
@@ -39,7 +38,7 @@ async def is_email_taken(email: str):
             email = $1
     """
     result = await AsyncDBPool.fetch_one(sql, (email,))
-    return bool(result)
+    return result
 
 async def get_user_email_query(email: str):
     """
@@ -54,7 +53,7 @@ async def get_user_email_query(email: str):
         WHERE email = $1
     """
     result = await AsyncDBPool.fetch_one(sql, (email,))
-    return bool(result)
+    return result
 
 async def get_user_info_by_id(user_id: int):
     '''

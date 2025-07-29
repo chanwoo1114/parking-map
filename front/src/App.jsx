@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import LoginPage from './pages/LoginPage.jsx';
 import MapPage from './pages/MapPage.jsx';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
           <Route path="/map" element={<MapPage />} />
       </Routes>
     </BrowserRouter>

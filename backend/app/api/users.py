@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
-from backend.app.core.dependencies import get_current_user_id
-from backend.app.schemas.users import (
+from app.core.dependencies import get_current_user_id
+from app.schemas.users import (
     UserInfoResponse, UpdateUserResponse,
     ChangePasswordRequest, DeleteAccountRequest
 )
-from backend.app.db.queries.user_queries import (
+from app.db.queries.user_queries import (
     get_user_info_by_id, update_user_info_by_id,
     get_password_hash_by_user_id, update_password_hash_by_user_id,
     deactivate_user_by_id
 )
-from backend.app.core.security import (
+from app.core.security import (
     hash_password, verify_password,
 )
 

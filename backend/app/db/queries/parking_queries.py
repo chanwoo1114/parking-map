@@ -1,4 +1,4 @@
-from backend.app.db.connect import AsyncDBPool
+from app.db.connect import AsyncDBPool
 import json
 
 async def insert_parking_lot_base(data: dict):

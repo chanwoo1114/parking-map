@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { registerUser } from '../api/auth';
-import EmailValidation from '../hooks/auth/EmailValidation';
-import NicknameValidation from '../hooks/auth/NicknameValidation';
+import EmailValidation from '../hooks/auth/useEmailValidation.js';
+import UseNicknameValidation from '../hooks/auth/useNicknameValidation.js';
 import validatePassword from '../utils/validatePassword';
 import PasswordInput from './PasswordInput';
 
@@ -11,7 +11,7 @@ export default function RegisterModal({ onClose, onRegisterSuccess }) {
     const [pw1, setPw1] = useState('');
     const [pw2, setPw2] = useState('');
     const [nickname, setNickname] = useState('');
-    const { valid: nicknameValid, error: nicknameError } = NicknameValidation(nickname);
+    const { valid: nicknameValid, error: nicknameError } = UseNicknameValidation(nickname);
     const [age, setAge] = useState('');
     const [gender, setGender] = useState('male');
     const [loading, setLoading] = useState(false);

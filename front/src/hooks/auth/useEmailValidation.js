@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { checkNicknameDuplicate } from '../../api/auth';
+import { checkEmailDuplicate } from '../../api/auth';
 
-export default function NicknameValidation(nickname, delay = 500) {
+export default function useEmailValidation(email, delay = 500) {
     const [valid, setValid] = useState(null);
     const [error, setError] = useState('');
 
@@ -14,18 +14,25 @@ export default function NicknameValidation(nickname, delay = 500) {
                     setError('');
                     return;
                 }
+                // 형식 검사
+                if (!/\S+@\S+\.\S+/.test(value)) {
+                    setValid(false);
+                    setError('유효한 이메일을 입력하세요.');
+                    return;
+                }
+                // 중복 검사
                 try {
-                    const { is_duplicate } = await checkNicknameDuplicate(value);
+                    const { is_duplicate } = await checkEmailDuplicate(value);
                     if (is_duplicate) {
                         setValid(false);
-                        setError('이미 사용 중인 닉네임입니다.');
+                        setError('이미 사용중인 이메일입니다.');
                     } else {
                         setValid(true);
                         setError('');
                     }
                 } catch {
                     setValid(false);
-                    setError('닉네임 중복 검사 실패');
+                    setError('이메일 중복 검사 실패');
                 }
             }, delay),
         [delay]
@@ -34,9 +41,9 @@ export default function NicknameValidation(nickname, delay = 500) {
     useEffect(() => {
         setValid(null);
         setError('');
-        debouncedValidate(nickname);
+        debouncedValidate(email);
         return debouncedValidate.cancel;
-    }, [nickname, debouncedValidate]);
+    }, [email, debouncedValidate]);
 
     return { valid, error };
 }

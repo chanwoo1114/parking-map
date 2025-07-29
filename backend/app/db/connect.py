@@ -1,5 +1,5 @@
 import asyncpg
-from backend.app.core.config import settings
+from app.core.config import settings
 
 class AsyncDBPool:
     _pool: asyncpg.pool.Pool | None = None

@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 from http.client import HTTPException
 from passlib.context import CryptContext
-from backend.app.core.config import settings
+from app.core.config import settings
 import jwt
 from jwt.exceptions import InvalidTokenError
 

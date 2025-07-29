@@ -1,5 +1,5 @@
 from fastapi import Header, HTTPException, Depends
-from backend.app.core.security import get_user_id_from_token
+from app.core.security import get_user_id_from_token
 from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login-form")
