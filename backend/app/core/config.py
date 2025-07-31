@@ -13,10 +13,6 @@ class Settings(BaseSettings):
     KAKAO_CLIENT_SECRET: str
     KAKAO_REDIRECT_URI: str
 
-    NAVER_CLIENT_ID: str
-    NAVER_CLIENT_SECRET: str
-    NAVER_REDIRECT_URI: str
-
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str

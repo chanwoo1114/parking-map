@@ -100,42 +100,6 @@ async def login_form_user(form_data: OAuth2PasswordRequestForm = Depends()):
         refresh_token=refresh_token
     )
 
-@router.get("/social/{provider}")
-async def social_login(provider: str):
-    if provider == "kakao":
-        params = {
-            "client_id": settings.KAKAO_CLIENT_ID,
-            "redirect_uri": settings.KAKAO_REDIRECT_URI,
-            "response_type": "code",
-            "scope": "account_email profile_nickname",
-        }
-        url = httpx.URL("https://kauth.kakao.com/oauth/authorize", params=params)
-
-    elif provider == "naver":
-        state = os.urandom(16).hex()
-        params = {
-            "client_id": settings.NAVER_CLIENT_ID,
-            "redirect_uri": settings.NAVER_REDIRECT_URI,
-            "response_type": "code",
-            "state": state,
-        }
-        url = httpx.URL("https://nid.naver.com/oauth2.0/authorize", params=params)
-
-    elif provider == "google":
-        params = {
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "redirect_uri": settings.GOOGLE_REDIRECT_URI,
-            "response_type": "code",
-            "scope": "openid email profile",
-            "access_type": "offline",
-        }
-        url = httpx.URL("https://accounts.google.com/o/oauth2/v2/auth", params=params)
-
-    else:
-        raise HTTPException(status_code=400, detail="Unsupported provider")
-
-    return RedirectResponse(str(url))
-
 '''토큰 갱신 API'''
 @router.post('refresh', response_model=TokenResponse)
 async def refresh_token(payload: TokenRefreshRequest):

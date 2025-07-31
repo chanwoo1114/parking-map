@@ -1,26 +1,15 @@
-import { useEffect } from 'react';
+// src/pages/MapPage.jsx
+import React from 'react';
+import useCurrentPosition from '../hooks/useCurrentPosition';
+import VWorldMap from '../components/map/VWorldMap';
 
 export default function MapPage() {
-    useEffect(() => {
-        if (window.vw?.ol3?.Map) {
-            const options = {
-                basemapType: window.vw.ol3.BasemapType.GRAPHIC,
-                controlDensity: window.vw.ol3.DensityType.EMPTY,
-                interactionDensity: window.vw.ol3.DensityType.FULL,
-                controlsAutoArrange: true,
-                homePosition: window.vw.ol3.CameraPosition,
-                initPosition: window.vw.ol3.CameraPosition,
-            };
+    const defaultCenter = [127.1052131, 37.3595316];
+    const { coords, loading } = useCurrentPosition(defaultCenter);
 
-            const map = new window.vw.ol3.Map('mapVO', options);
+    if (loading) {
+        return <div>위치 정보를 불러오는 중…</div>;
+    }
 
-            map.getView().setCenter([127.1052131, 37.3595316]);
-            map.getView().setZoom(13);
-        } else {
-            console.error('VWorld API가 아직 준비되지 않았습니다.');
-        }
-    }, []);
-
-    // 반드시 id="mapVO" 로 맵 컨테이너를 만들어 주세요
-    return <div id="mapVO" style={{ width: '100%', height: '100vh' }} />;
+    return <VWorldMap center={coords} />;
 }

@@ -17,10 +17,6 @@ class Settings(BaseSettings):
     KAKAO_CLIENT_SECRET: str
     KAKAO_REDIRECT_URI: str
 
-    NAVER_CLIENT_ID: str
-    NAVER_CLIENT_SECRET: str
-    NAVER_REDIRECT_URI: str
-
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str
@@ -75,7 +71,7 @@ class AsyncDBPool:
 async def insert_parking_lot_base(data: dict):
     sql = """
             INSERT INTO public.parking_lot_base (external_id, name, lot_type, address, geom, description)
-            SELECT $1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), $7 
+            SELECT $1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), $7
             WHERE NOT EXISTS (
             SELECT 1 FROM public.parking_lot_base
             WHERE external_id = $1::VARCHAR AND name = $2::VARCHAR
@@ -97,7 +93,7 @@ async def parking_info_api():
     service_key = 'lchYOllVvCEhzpzVzmc1T4rOcFMQePdGt8BUaHRzJHEL6P8ZcHtZwBIF0q6h%2BJbJ2Xm9cIZjYnMoGi5CMc0TyQ%3D%3D'
     number_of_rows = '10'
     format = '2'
-    page_no = 3355
+    page_no = 3587
 
     await AsyncDBPool.init_pool()
 

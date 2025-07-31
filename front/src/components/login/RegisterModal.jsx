@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { registerUser } from '../api/auth';
-import EmailValidation from '../hooks/auth/useEmailValidation.js';
-import UseNicknameValidation from '../hooks/auth/useNicknameValidation.js';
-import validatePassword from '../utils/validatePassword';
-import PasswordInput from './PasswordInput';
+import { registerUser } from '../../api/auth.js';
+import EmailValidation from '../../hooks/auth/useEmailValidation.js';
+import UseNicknameValidation from '../../hooks/auth/useNicknameValidation.js';
+import validatePassword from '../../utils/validatePassword.js';
+import PasswordInput from './PasswordInput.jsx';
 
 export default function RegisterModal({ onClose, onRegisterSuccess }) {
     const [email, setEmail] = useState('');

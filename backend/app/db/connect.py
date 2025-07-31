@@ -13,8 +13,10 @@ class AsyncDBPool:
                 database=settings.POSTGRES_DB,
                 host=settings.POSTGRES_HOST,
                 port=int(settings.POSTGRES_PORT),
+                timeout=5,
                 min_size=1,
                 max_size=10,
+                ssl=False,
             )
 
     @classmethod
