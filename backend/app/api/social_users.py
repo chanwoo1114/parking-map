@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import httpx
+import uuid
 
 from app.core.config import settings
 from app.db.queries.social_user_queries import get_social_user, create_social_user
@@ -15,7 +16,7 @@ async def social_login(provider: str):
             "client_id":    settings.KAKAO_CLIENT_ID,
             "redirect_uri": settings.KAKAO_REDIRECT_URI,
             "response_type":"code",
-            "scope":        "account_email profile_nickname",
+            "scope":        "account_email",
             "prompt":       "login",
         }
         url = httpx.URL("https://kauth.kakao.com/oauth/authorize", params=params)
@@ -25,7 +26,7 @@ async def social_login(provider: str):
             "client_id":     settings.GOOGLE_CLIENT_ID,
             "redirect_uri":  settings.GOOGLE_REDIRECT_URI,
             "response_type": "code",
-            "scope":         "openid email profile",
+            "scope":         "openid email",
             "access_type":   "offline",
             "prompt":        "consent",
         }
@@ -41,7 +42,6 @@ async def social_login(provider: str):
 async def social_callback(
     provider: str,
     code: str,
-    state: str = Query(None)  # Naver 용
 ):
     # 1) 토큰 교환
     async with httpx.AsyncClient() as client:
@@ -88,17 +88,6 @@ async def social_callback(
             profile = profile_resp.json()
             pid      = str(profile["id"])
             email    = profile["kakao_account"].get("email")
-            nickname = profile["properties"].get("nickname")
-
-        elif provider == "naver":
-            profile_resp = await client.get(
-                "https://openapi.naver.com/v1/nid/me",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            profile = profile_resp.json()["response"]
-            pid      = profile["id"]
-            email    = profile.get("email")
-            nickname = profile.get("nickname") or profile.get("name")
 
         elif provider == "google":
             profile_resp = await client.get(
@@ -108,13 +97,15 @@ async def social_callback(
             profile = profile_resp.json()
             pid      = profile["id"]
             email    = profile.get("email")
-            nickname = profile.get("name")
 
-    # 3) DB 저장/조회
     user = await get_social_user(provider, pid)
-    user_id = user["id"] if user else await create_social_user(provider, pid, email, nickname)
 
-    # 4) JWT 생성 & 반환
+    if user:
+        user_id = user["id"]
+    else:
+        nickname = f"user_{uuid.uuid4().hex[:8]}"
+        user_id = await create_social_user(provider, pid, email, nickname)
+
     access_jwt  = create_access_token({"user_id": user_id})
     refresh_jwt = create_refresh_token({"user_id": user_id})
 

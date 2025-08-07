@@ -1,29 +1,31 @@
 from app.db.connect import AsyncDBPool
 from typing import Optional
-
-async def insert_app_user_query():
-    """
-    사용자 UUID 생성
-    """
-    sql = """
-        INSERT INTO public.app_user (
-            uuid
-        ) VALUES (uuid_generate_v4()) RETURNING id
-    """
-    result = await AsyncDBPool.execute_returning(sql)
-    return result
+from app.core.security import hash_password
+from app.schemas.auth import RegisterRequest
 
 
-async def insert_email_user_query(val: tuple):
-    """
-    이메일 사용자 생성
-    """
-    sql = """
-        INSERT INTO public.user_info (
-            user_id, email, password_hash, nickname, age, gender
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-    """
-    await AsyncDBPool.execute(sql, val)
+async def create_email_user(
+        payload: RegisterRequest
+) -> int:
+    try:
+        user_id = await AsyncDBPool.execute_returning(
+            "INSERT INTO public.app_user (uuid) VALUES (uuid_generate_v4()) RETURNING id"
+        )
+
+        hashed_pw = hash_password(payload.password1)
+        await AsyncDBPool.execute(
+            """
+            INSERT INTO public.user_info (user_id, email, password_hash, nickname, age, gender)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            """,
+            (user_id, payload.email, hashed_pw, payload.nickname, payload.age, payload.gender)
+        )
+
+        return user_id
+
+    except Exception as e:
+        print(f"사용자 생성 오류: {e}")
+        raise e
 
 async def is_email_taken(email: str):
     """
@@ -153,7 +155,7 @@ async def deactivate_user_by_id(user_id: int):
         UPDATE
             public.user_info
         SET 
-            is_active = FASLE
+            is_active = FALSE
         WHERE
             user_id = $1
     """

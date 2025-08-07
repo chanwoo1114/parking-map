@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from typing import List, Optional
+import json
 from app.core.dependencies import get_current_user_id
 from app.schemas.parking import (
     ParkingLotUserAssignmentCreate, ResidentParkingLotUpdate,
-
+    PublicParkingLotOut,
 )
 from app.db.queries.parking_queries import (
     insert_resident_parking_lot, update_resident_parking_lot,
-    delete_resident_parking_lot
+    delete_resident_parking_lot, fetch_public_parking_lots
 )
-import json
 
 router = APIRouter(prefix="/parking-lots", tags=["ParkingLot"])
 
@@ -61,3 +62,13 @@ async def delete_parking_lot(
         raise HTTPException(status_code=404, detail="해당 주차장을 찾을 수 없거나 삭제 권한이 없습니다.")
 
     return {"id": deleted_id, "message": "주차장이 비활성화되었습니다"}
+
+@router.get("/summary", response_model=List[PublicParkingLotOut])
+async def get_public_parking_lot(
+    lng: float = Query(..., description="경도"),
+    lat: float = Query(..., description="위도"),
+    radius: int = Query(1500, description="반경(m)"),
+):
+    rows = await fetch_public_parking_lots(lng, lat, radius)
+
+    return [PublicParkingLotOut(**r) for r in rows]
